@@ -1,6 +1,5 @@
 package com.example.lazyload;
 
-import android.content.Context;
 import android.databinding.DataBindingUtil;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -45,7 +44,11 @@ public class TecAdapter extends RecyclerView.Adapter<TecAdapter.ItemTecViewHolde
         return tecList.size();
     }
 
-    public class ItemTecViewHolder extends RecyclerView.ViewHolder {
+    public void clearTecList() {
+        tecList.clear();
+    }
+
+     class ItemTecViewHolder extends RecyclerView.ViewHolder {
         TecItemBinding itemBinding;
 
         ItemTecViewHolder(TecItemBinding itemBinding) {

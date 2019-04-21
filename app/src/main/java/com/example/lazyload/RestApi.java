@@ -16,4 +16,10 @@ public interface RestApi {
                                  @Field("page") int pageNumber,
                                  @Field("order_by") String orderBy,
                                  @Field("order_type") String orderType);
+
+    @FormUrlEncoded
+    @POST("tec.php")
+    Call<List<Tec>> searchTec(@Field("action") String action,
+                              @Field("page") int pageNumber,
+                              @Field("search_text") String searchText);
 }

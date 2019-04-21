@@ -6,6 +6,7 @@ import android.databinding.ObservableInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +26,9 @@ public class TecViewModel extends Observable {
     private List<Tec> tecList;
     private Context context;
     private int visible, invisible;
-    private int pageNumber;
 
     public TecViewModel(@Nullable Context context, int pageNumber) {
         this.context = context;
-        this.pageNumber = pageNumber;
         this.tecList = new ArrayList<>();
         tecProgress = new ObservableInt(View.GONE);
         tecRecycler = new ObservableInt(View.GONE);
@@ -56,9 +55,15 @@ public class TecViewModel extends Observable {
                 if (response.isSuccessful()) {
                     List<Tec> stringResponse = response.body();
                     if (stringResponse != null) {
+
                         if (stringResponse.isEmpty()){
-                            messageLabel.set("Tec not found");
-                            viewVisibility(invisible,invisible,visible);
+                            if (tecList.isEmpty()){
+                                messageLabel.set("Tec not found");
+                                viewVisibility(invisible,invisible,visible);
+                            }else{
+                                Toast.makeText(context, "No more data", Toast.LENGTH_SHORT).show();
+                                viewVisibility(invisible,visible,invisible);
+                            }
                         }else {
                             changeTecDataSet(stringResponse);
                             viewVisibility(invisible,visible,invisible);
@@ -90,6 +95,7 @@ public class TecViewModel extends Observable {
     }
 
     public void loadMoreData(int pageNumber){
+        tecProgress.set(visible);
         fetchTecList(pageNumber);
     }
 
@@ -109,5 +115,41 @@ public class TecViewModel extends Observable {
         context = null;
     }
 
+
+    public void searchTec(int pageNumber,String query) {
+        tecProgress.set(visible);
+        tecList.clear();
+        findTecByText(pageNumber,query);
+    }
+
+    private void findTecByText(int pageNumber,String query){
+        RestApi api = APIClient.getClient().create(RestApi.class);
+
+        Call<List<Tec>> call = api.searchTec("search_tec",pageNumber,query);
+        call.enqueue(new Callback<List<Tec>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<Tec>> call, @NonNull Response<List<Tec>> response) {
+                if (response.isSuccessful()) {
+                    List<Tec> stringResponse = response.body();
+                    if (stringResponse != null) {
+                        if (stringResponse.isEmpty()){
+                            messageLabel.set("Tec not found");
+                            viewVisibility(invisible,invisible,visible);
+                        }else {
+                            changeTecDataSet(stringResponse);
+                            viewVisibility(invisible,visible,invisible);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<Tec>> call, @NonNull Throwable t) {
+                //String errorMessage = NetworkError.getNetworkErrorMessage(t);
+                messageLabel.set("");
+                viewVisibility(invisible,invisible,visible);
+            }
+        });
+    }
 
 }
